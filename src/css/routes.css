@@ -1,0 +1,37 @@
+/*@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@400;600&display=swap');
+*/
+
+* {
+    margin: 0;
+    padding: 0;
+}
+
+.flex {
+    display: flex;
+}
+
+body {
+    font-family: 'Rubik', sans-serif;
+}
+
+
+
+.sidebar {
+    width: 14rem;
+    height: calc(100vh-52px);
+    border-right: 1px solid #c4ccde;
+}
+.fondo {
+    font-family: 'Oxygen', sans-serif;
+    height: 100vh;
+    background-image: url(https://img.freepik.com/free-vector/gradient-green-color-background-modern-abstract-designs-liquid_343694-2343.jpg?w=826&t=st=1672237278~exp=1672237878~hmac=fd8a0530b92603e78246ec672ef6b4f2cf848c4b6003b9c0f64f65a0e93b6122);
+    background-size: cover;
+    /*background: linear-gradient(
+      180deg,
+      rgba(238, 69, 64, 1) 0%,
+      rgba(199, 44, 65, 1) 15%,
+      rgba(128, 19, 54, 1) 30%,
+      rgba(81, 10, 50, 1) 45%,
+      rgba(45, 20, 44, 1) 100%
+    );*/
+  }

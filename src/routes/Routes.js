@@ -7,7 +7,6 @@ import "bootstrap/dist/js/bootstrap.bundle";
 import '../css/routes.css'
 import Ventas from "../pages/Ventas";
 import ReporteFacturas from "../pages/ReporteFacturas";
-import NavBar from "../components/NavBar";
 
 function App() {
   return (

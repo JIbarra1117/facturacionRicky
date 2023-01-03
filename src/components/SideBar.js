@@ -16,12 +16,12 @@ const Sidebar = () => {
         <CDBSidebar textColor="#fff" backgroundColor="#333" >
           {/**<div style={{height:80}}></div> */}
           <CDBSidebarHeader prefix={<i className="fa fa-bars fa-large"></i>}>
-            <a href="/facturacion" className="text-decoration-none" style={{ color: 'inherit' }}>
+            <a href="/facturacion" className="text-decoration-none" style={{ color: 'inherit' , backdropFilter: "blur( 8.5px )" }}>
               Ventas
             </a>
           </CDBSidebarHeader>
   
-          <CDBSidebarContent className="sidebar-content">
+          <CDBSidebarContent className="sidebar-content" style={{backdropFilter: "blur( 8.5px )" }}>
             <CDBSidebarMenu>
               <NavLink to="/ventas" className={({ isActive }) => isActive? "active": ''}>
                 <CDBSidebarMenuItem icon="columns">Ventas</CDBSidebarMenuItem>

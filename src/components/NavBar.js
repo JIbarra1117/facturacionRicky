@@ -6,7 +6,6 @@ import '../css/myStyles.css'
 import Swal from "sweetalert2";
 
 const cookies = new Cookies();
-var user = cookies.get('sesion_usuario') === undefined ? "" : cookies.get('sesion_usuario');
 
 const cerrarSesion = () => {
     cookies.remove('sesion_usuario', { path: "/" });

@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react'
+import React, {  useState } from 'react'
 import Sidebar from "../components/SideBar";
 import Autosuggest from 'react-autosuggest';
 import NavBar from "../components/NavBar";
@@ -8,16 +8,7 @@ import Cookies from 'universal-cookie';
 import '../css/routes.css'
 import '../css/ventas.css'
 import 'bootstrap-icons/font/bootstrap-icons.css';
-import ModalProductos from '../components/ModalProductos';
-
-const modelo = {
-    nombre: "",
-    correo: "",
-    idRolNavigation: {
-        idRol: 0,
-        descripcion: ""
-    }
-}
+import ModalProductos from '../components/ModalTabla';
 
 const cookies = new Cookies();
 
@@ -30,7 +21,6 @@ function Ventas() {
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
     //
-    const user = useContext(cookies.get('sesion_usuario'));
 
     const [a_Productos, setA_Productos] = useState([])
     const [a_Busqueda, setA_Busqueda] = useState("")
@@ -107,7 +97,7 @@ function Ventas() {
 
         producto.forEach(item => {
             //console.log('asignada'+suggestion.idProducto + '|| lista:' + item.idProducto)   
-            if (suggestion.idProducto == item.idProducto) {
+            if (suggestion.idProducto === item.idProducto) {
                 validar = true;
             }
         });
@@ -183,7 +173,7 @@ function Ventas() {
 
     const eliminarProducto = (id) => {
 
-        let listaproductos = productos.filter(p => p.idProducto != id)
+        let listaproductos = productos.filter(p => p.idProducto !== id)
 
         setProductos(listaproductos)
 
@@ -216,14 +206,35 @@ function Ventas() {
 
     const terminarVenta = () => {
 
-        if (productos.length < 1) {
+        
+    if(documentoCliente.length < 1){
+        Swal.fire(
+            'Opps!',
+            'La cedula del cliente no ha sido asignado',
+            'error'
+        )
+        return
+    }else{
+        if(nombreCliente.length<1){
             Swal.fire(
                 'Opps!',
-                'No existen productos',
+                'El cliente no ha sido asignado',
                 'error'
             )
             return
+        }else{
+            if (productos.length < 1) {
+                Swal.fire(
+                    'Opps!',
+                    'No existen productos',
+                    'error'
+                )
+                return
+            }
         }
+    }
+
+
 
         let venta = {
             documentoCliente: documentoCliente,
@@ -291,13 +302,13 @@ function Ventas() {
                                         <Row >
                                             <Col sm={6}>
                                                 <FormGroup>
-                                                    <Label>Nro Documento</Label>
+                                                    <Label>Número de cédula</Label>
                                                     <Input bsSize="sm" value={documentoCliente} onChange={(e) => setDocumentoCliente(e.target.value)} />
                                                 </FormGroup>
                                             </Col>
                                             <Col sm={6}>
                                                 <FormGroup>
-                                                    <Label>Nombre</Label>
+                                                    <Label>Nombres</Label>
                                                     <Input bsSize="sm" value={nombreCliente} onChange={(e) => setNombreCliente(e.target.value)} />
                                                 </FormGroup>
                                             </Col>

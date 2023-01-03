@@ -1,4 +1,4 @@
-import React, {  useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Sidebar from "../components/SideBar";
 import Autosuggest from 'react-autosuggest';
 import NavBar from "../components/NavBar";
@@ -8,8 +8,8 @@ import Cookies from 'universal-cookie';
 import '../css/routes.css'
 import '../css/ventas.css'
 import 'bootstrap-icons/font/bootstrap-icons.css';
-import ModalProductos from '../components/ModalTabla';
-
+import ModalTabla from '../components/ModalTabla';
+import axios from 'axios';
 const cookies = new Cookies();
 
 function Ventas() {
@@ -20,6 +20,13 @@ function Ventas() {
 
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
+
+    const [productosGeneral, setProductosGeneral] = useState([]);
+    const [clientesGeneral, setClientesGeneral] = useState([]);
+
+    const [row, setRow] = useState([]);
+    const [column, setColumn] = useState([]);
+    const [tituloModal, setTituloModal] = useState("");
     //
 
     const [a_Productos, setA_Productos] = useState([])
@@ -33,6 +40,89 @@ function Ventas() {
     const [total, setTotal] = useState(0)
     const [subTotal, setSubTotal] = useState(0)
     const [igv, setIgv] = useState(0)
+
+    useEffect(() => {
+        solicitudProductos();
+    }, [])
+
+    //Solicitud para obtener productos
+    const solicitudProductos = async () => {
+        await axios.get("http://localhost:8090/productos")
+            .then(response => {
+                setProductosGeneral(response.data)
+            })
+    }
+    //Solicitud para obtener productos
+    const solicitudClientes = async () => {
+        await axios.get("http://localhost:8090/productos")
+            .then(response => {
+                setClientesGeneral(response.data)
+            })
+    }
+
+    const columnasProductos = [
+        {
+            name: 'Id Producto',
+            selector: row => row.idProducto,
+            sortable: true,
+        },
+        {
+            name: 'Código',
+            selector: row => row.codigo,
+            sortable: true,
+        },
+        {
+            name: 'Marca',
+            selector: row => row.marca,
+            sortable: true,
+        },
+        {
+            name: 'Categoria',
+            selector: row => row.idCategoria,
+            sortable: true,
+        },
+        {
+            name: 'Precio',
+            selector: row => row.precio,
+            sortable: true,
+        },
+        {
+            name: 'Activo',
+            selector: row => row.esActivo,
+            sortable: true,
+        },
+        {
+            name: 'Fecha Registro',
+            selector: row => row.fechaRegistro,
+            sortable: true,
+        },
+    ];
+
+    function propsModalTabla(titulo) {
+        setTituloModal(titulo);
+        switch (tituloModal) {
+            case "Productos":
+                //Agregar a setClumns las propiedades de los productos
+                setColumn([...columnasProductos]);
+                //Agregar a setRow los productos
+                setRow(productosGeneral);
+                console.log(row);
+                console.log(column);
+                break;
+            case "Clientes":
+                //Agregar a setRow los clientes
+                setRow(productosGeneral);
+                //Agregar a setClumns las propiedades de los clientes
+                setColumn(columnasProductos);
+                break;
+        }
+        //var data = false;
+            if(row.length>0 && column.length>0){
+                return handleShow();      
+            }
+        
+        
+    }
 
     const reestablecer = () => {
         setDocumentoCliente("");
@@ -206,33 +296,33 @@ function Ventas() {
 
     const terminarVenta = () => {
 
-        
-    if(documentoCliente.length < 1){
-        Swal.fire(
-            'Opps!',
-            'La cedula del cliente no ha sido asignado',
-            'error'
-        )
-        return
-    }else{
-        if(nombreCliente.length<1){
+
+        if (documentoCliente.length < 1) {
             Swal.fire(
                 'Opps!',
-                'El cliente no ha sido asignado',
+                'La cedula del cliente no ha sido asignado',
                 'error'
             )
             return
-        }else{
-            if (productos.length < 1) {
+        } else {
+            if (nombreCliente.length < 1) {
                 Swal.fire(
                     'Opps!',
-                    'No existen productos',
+                    'El cliente no ha sido asignado',
                     'error'
                 )
                 return
+            } else {
+                if (productos.length < 1) {
+                    Swal.fire(
+                        'Opps!',
+                        'No existen productos',
+                        'error'
+                    )
+                    return
+                }
             }
         }
-    }
 
 
 
@@ -279,10 +369,8 @@ function Ventas() {
 
     }
 
-
-
-
     return (<>
+        
         <div className="flex">
             <Sidebar />
 
@@ -299,20 +387,20 @@ function Ventas() {
                                     </CardHeader>
                                     <CardBody className='text-white'>
                                         <div className='container-fluid'>
-                                        <Row >
-                                            <Col sm={6}>
-                                                <FormGroup>
-                                                    <Label>Número de cédula</Label>
-                                                    <Input bsSize="sm" value={documentoCliente} onChange={(e) => setDocumentoCliente(e.target.value)} />
-                                                </FormGroup>
-                                            </Col>
-                                            <Col sm={6}>
-                                                <FormGroup>
-                                                    <Label>Nombres</Label>
-                                                    <Input bsSize="sm" value={nombreCliente} onChange={(e) => setNombreCliente(e.target.value)} />
-                                                </FormGroup>
-                                            </Col>
-                                        </Row>
+                                            <Row >
+                                                <Col sm={6}>
+                                                    <FormGroup>
+                                                        <Label>Número de cédula</Label>
+                                                        <Input bsSize="sm" value={documentoCliente} onChange={(e) => setDocumentoCliente(e.target.value)} />
+                                                    </FormGroup>
+                                                </Col>
+                                                <Col sm={6}>
+                                                    <FormGroup>
+                                                        <Label>Nombres</Label>
+                                                        <Input bsSize="sm" value={nombreCliente} onChange={(e) => setNombreCliente(e.target.value)} />
+                                                    </FormGroup>
+                                                </Col>
+                                            </Row>
                                         </div>
                                     </CardBody>
                                 </Card>
@@ -326,72 +414,72 @@ function Ventas() {
                                     </CardHeader>
                                     <CardBody>
                                         <div className='container-fluid'>
-                                        <Row className="mb-2">
-                                            <Col sm={10}>
-                                                <FormGroup>
-                                                    <Autosuggest
-                                                        suggestions={a_Productos}
-                                                        onSuggestionsFetchRequested={onSuggestionsFetchRequested}
-                                                        onSuggestionsClearRequested={onSuggestionsClearRequested}
-                                                        getSuggestionValue={getSuggestionValue}
-                                                        renderSuggestion={renderSuggestion}
-                                                        inputProps={inputProps}
-                                                        onSuggestionSelected={sugerenciaValidada}
-                                                    />
-                                                </FormGroup>
-                                            </Col>
-                                            <Col sm={1}>
-                                                <FormGroup>
-                                                    <button type="button" className='btn btn-outline-light' title="Tooltip on right" onClick={handleShow}> 
-                                                    <i className="bi bi-receipt-cutoff"></i>
-                                                    </button>
-                                                </FormGroup>
-                                            </Col>
-                                        </Row>
-                                        <Row>
-                                            <Col sm={12}>
-                                                <Table striped size="sm" className='text-white'>
-                                                    <thead>
-                                                        <tr>
-                                                            <th></th>
-                                                            <th>Producto</th>
-                                                            <th>Cantidad</th>
-                                                            <th>Precio</th>
-                                                            <th>Total</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {
-                                                            (productos.length < 1) ? (
-                                                                <tr>
-                                                                    <td style={{ color: "white" }} colSpan="5">Sin productos</td>
-                                                                </tr>
-                                                            ) :
-                                                                (
-                                                                    productos.map((item) => (
-                                                                        <tr key={item.idProducto} >
-                                                                            <td >
-                                                                                <Button color="danger" size="sm"
-                                                                                    onClick={() => eliminarProducto(item.idProducto)}
-                                                                                >
-                                                                                    <i className="fas fa-trash-alt"></i>
-                                                                                </Button>
-                                                                            </td>
-                                                                            <td style={{ color: "white" }}>{item.descripcion}</td>
-                                                                            <td style={{ color: "white" }}>{item.cantidad}</td>
-                                                                            <td style={{ color: "white", textAlign: "right" }}>{item.precio}</td>
-                                                                            <td style={{ color: "white", textAlign: "right" }}>{item.total}</td>
-                                                                        </tr>
-                                                                    ))
-                                                                )
+                                            <Row className="mb-2">
+                                                <Col sm={10}>
+                                                    <FormGroup>
+                                                        <Autosuggest
+                                                            suggestions={a_Productos}
+                                                            onSuggestionsFetchRequested={onSuggestionsFetchRequested}
+                                                            onSuggestionsClearRequested={onSuggestionsClearRequested}
+                                                            getSuggestionValue={getSuggestionValue}
+                                                            renderSuggestion={renderSuggestion}
+                                                            inputProps={inputProps}
+                                                            onSuggestionSelected={sugerenciaValidada}
+                                                        />
+                                                    </FormGroup>
+                                                </Col>
+                                                <Col sm={1}>
+                                                    <FormGroup>
+                                                        <button type="button" className='btn btn-outline-light' title="Tooltip on right" onClick={() => propsModalTabla("Productos")}>
+                                                            <i className="bi bi-receipt-cutoff"></i>
+                                                        </button>
+                                                    </FormGroup>
+                                                </Col>
+                                            </Row>
+                                            <Row>
+                                                <Col sm={12}>
+                                                    <Table striped size="sm" className='text-white'>
+                                                        <thead>
+                                                            <tr>
+                                                                <th></th>
+                                                                <th>Producto</th>
+                                                                <th>Cantidad</th>
+                                                                <th>Precio</th>
+                                                                <th>Total</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {
+                                                                (productos.length < 1) ? (
+                                                                    <tr>
+                                                                        <td style={{ color: "white" }} colSpan="5">Sin productos</td>
+                                                                    </tr>
+                                                                ) :
+                                                                    (
+                                                                        productos.map((item) => (
+                                                                            <tr key={item.idProducto} >
+                                                                                <td >
+                                                                                    <Button color="danger" size="sm"
+                                                                                        onClick={() => eliminarProducto(item.idProducto)}
+                                                                                    >
+                                                                                        <i className="fas fa-trash-alt"></i>
+                                                                                    </Button>
+                                                                                </td>
+                                                                                <td style={{ color: "white" }}>{item.descripcion}</td>
+                                                                                <td style={{ color: "white" }}>{item.cantidad}</td>
+                                                                                <td style={{ color: "white", textAlign: "right" }}>{item.precio}</td>
+                                                                                <td style={{ color: "white", textAlign: "right" }}>{item.total}</td>
+                                                                            </tr>
+                                                                        ))
+                                                                    )
 
 
-                                                        }
-                                                    </tbody>
-                                                </Table>
-                                            </Col>
+                                                            }
+                                                        </tbody>
+                                                    </Table>
+                                                </Col>
 
-                                        </Row>
+                                            </Row>
                                         </div>
                                     </CardBody>
                                 </Card>
@@ -407,42 +495,42 @@ function Ventas() {
                                         Detalle
                                     </CardHeader>
                                     <CardBody >
-                                        
-                                    <div className='container-fluid'>
-                                        <Row className="mb-2">
-                                            <Col sm={12}>
-                                                <InputGroup size="sm" >
-                                                    <InputGroupText>Tipo:</InputGroupText>
-                                                    <Input type="select" value={tipoDocumento} onChange={(e) => setTipoDocumento(e.target.value)}>
-                                                        <option value="Factura">Factura</option>
-                                                    </Input>
-                                                </InputGroup>
-                                            </Col>
-                                        </Row>
-                                        <Row className="mb-2">
-                                            <Col sm={12}>
-                                                <InputGroup size="sm" >
-                                                    <InputGroupText>Sub Total:</InputGroupText>
-                                                    <Input disabled value={subTotal} style={{ textAlign: "right" }} />
-                                                </InputGroup>
-                                            </Col>
-                                        </Row>
-                                        <Row className="mb-2">
-                                            <Col sm={12}>
-                                                <InputGroup size="sm" >
-                                                    <InputGroupText>IVA (12%):</InputGroupText>
-                                                    <Input disabled value={igv} style={{ textAlign: "right" }} />
-                                                </InputGroup>
-                                            </Col>
-                                        </Row>
-                                        <Row>
-                                            <Col sm={12}>
-                                                <InputGroup size="sm" >
-                                                    <InputGroupText>Total:</InputGroupText>
-                                                    <Input disabled value={total} style={{ textAlign: "right" }} />
-                                                </InputGroup>
-                                            </Col>
-                                        </Row>
+
+                                        <div className='container-fluid'>
+                                            <Row className="mb-2">
+                                                <Col sm={12}>
+                                                    <InputGroup size="sm" >
+                                                        <InputGroupText>Tipo:</InputGroupText>
+                                                        <Input type="select" value={tipoDocumento} onChange={(e) => setTipoDocumento(e.target.value)}>
+                                                            <option value="Factura">Factura</option>
+                                                        </Input>
+                                                    </InputGroup>
+                                                </Col>
+                                            </Row>
+                                            <Row className="mb-2">
+                                                <Col sm={12}>
+                                                    <InputGroup size="sm" >
+                                                        <InputGroupText>Sub Total:</InputGroupText>
+                                                        <Input disabled value={subTotal} style={{ textAlign: "right" }} />
+                                                    </InputGroup>
+                                                </Col>
+                                            </Row>
+                                            <Row className="mb-2">
+                                                <Col sm={12}>
+                                                    <InputGroup size="sm" >
+                                                        <InputGroupText>IVA (12%):</InputGroupText>
+                                                        <Input disabled value={igv} style={{ textAlign: "right" }} />
+                                                    </InputGroup>
+                                                </Col>
+                                            </Row>
+                                            <Row>
+                                                <Col sm={12}>
+                                                    <InputGroup size="sm" >
+                                                        <InputGroupText>Total:</InputGroupText>
+                                                        <Input disabled value={total} style={{ textAlign: "right" }} />
+                                                    </InputGroup>
+                                                </Col>
+                                            </Row>
                                         </div>
 
 
@@ -465,7 +553,8 @@ function Ventas() {
 
             </div>
         </div>
-        <ModalProductos show={show} handleClose={handleClose}/>
+    <ModalTabla show={show} handleClose={handleClose} titulo={tituloModal} rows={row} columns={column} />
+
     </>
     )
 }

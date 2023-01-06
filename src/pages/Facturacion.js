@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component, useState } from "react";
 import Cookies from "universal-cookie";
 import Sidebar from "../components/SideBar";
 import NavBar from "../components/NavBar";
@@ -9,7 +9,6 @@ const cookies = new Cookies();
 var usuario = cookies.get('sesion_usuario') === undefined ? "" : cookies.get('sesion_usuario');
 
 class Facturacion extends Component {
-
     dataCard = {
         id: 3,
         title: "",

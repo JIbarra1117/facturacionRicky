@@ -29,28 +29,47 @@ function Ventas() {
     const [tituloModal, setTituloModal] = useState("");
     //
 
-    const [a_Productos, setA_Productos] = useState([])
-    const [a_Busqueda, setA_Busqueda] = useState("")
+    const [a_Productos, setA_Productos] = useState([]);
+    const [a_Busqueda, setA_Busqueda] = useState("");
 
-    const [documentoCliente, setDocumentoCliente] = useState("")
-    const [nombreCliente, setNombreCliente] = useState("")
+    const [documentoCliente, setDocumentoCliente] = useState("");
+    const [nombreCliente, setNombreCliente] = useState("");
 
-    const [tipoDocumento, setTipoDocumento] = useState("Factura")
-    const [productos, setProductos] = useState([])
-    const [total, setTotal] = useState(0)
-    const [subTotal, setSubTotal] = useState(0)
-    const [igv, setIgv] = useState(0)
+    const [tipoDocumento, setTipoDocumento] = useState("Factura");
+    const [productos, setProductos] = useState([]);
+    const [total, setTotal] = useState(0);
+    const [subTotal, setSubTotal] = useState(0);
+    const [igv, setIgv] = useState(0);
 
     useEffect(() => {
         solicitudProductos();
+       // console.log(productosGeneral)
+       // console.log(tituloModal)
     }, [])
+
+    useEffect(() => {
+        switch (tituloModal) {
+            case "Productos":
+                setColumn(columnasProductos);
+                setRow(productosGeneral);
+                break;
+            case "Clientes":
+                setRow(productosGeneral);
+                setColumn(columnasProductos);
+                break;
+        }
+    }, [tituloModal])
+
+    useEffect(()=>{
+        handleShow();
+    },[row,column])
 
     //Solicitud para obtener productos
     const solicitudProductos = async () => {
-        await axios.get("http://localhost:8090/productos")
-            .then(response => {
-                setProductosGeneral(response.data)
-            })
+        try{
+            const productos = await axios.get("http://localhost:8090/productos");
+            setProductosGeneral(productos.data);
+        }catch(e){console.log(e)}
     }
     //Solicitud para obtener productos
     const solicitudClientes = async () => {
@@ -97,32 +116,14 @@ function Ventas() {
             sortable: true,
         },
     ];
-
-    function propsModalTabla(titulo) {
-        setTituloModal(titulo);
-        switch (tituloModal) {
-            case "Productos":
-                //Agregar a setClumns las propiedades de los productos
-                setColumn([...columnasProductos]);
-                //Agregar a setRow los productos
-                setRow(productosGeneral);
-                console.log(row);
-                console.log(column);
-                break;
-            case "Clientes":
-                //Agregar a setRow los clientes
-                setRow(productosGeneral);
-                //Agregar a setClumns las propiedades de los clientes
-                setColumn(columnasProductos);
-                break;
+    
+    const propsModalTabla= (titulo) => {
+        //solicitudProductos();
+        setTituloModal(titulo);  
+        if(row.length>0){
+            handleShow();
         }
-        //var data = false;
-            if(row.length>0 && column.length>0){
-                return handleShow();      
-            }
-        
-        
-    }
+        }
 
     const reestablecer = () => {
         setDocumentoCliente("");
@@ -368,9 +369,11 @@ function Ventas() {
             })
 
     }
+    
 
+    
     return (<>
-        
+
         <div className="flex">
             <Sidebar />
 
@@ -398,6 +401,13 @@ function Ventas() {
                                                     <FormGroup>
                                                         <Label>Nombres</Label>
                                                         <Input bsSize="sm" value={nombreCliente} onChange={(e) => setNombreCliente(e.target.value)} />
+                                                    </FormGroup>
+                                                </Col>
+                                                <Col sm={6}>
+                                                    <FormGroup>
+                                                        <button type="button" className='btn btn-outline-light' title="Tooltip on right" onClick={()=>propsModalTabla("Clientes")}>
+                                                            <i className="bi bi-receipt-cutoff"></i>
+                                                        </button>
                                                     </FormGroup>
                                                 </Col>
                                             </Row>
@@ -430,7 +440,7 @@ function Ventas() {
                                                 </Col>
                                                 <Col sm={1}>
                                                     <FormGroup>
-                                                        <button type="button" className='btn btn-outline-light' title="Tooltip on right" onClick={() => propsModalTabla("Productos")}>
+                                                        <button type="button" className='btn btn-outline-light' title="Tooltip on right" onClick={()=>propsModalTabla("Productos")}>
                                                             <i className="bi bi-receipt-cutoff"></i>
                                                         </button>
                                                     </FormGroup>
@@ -553,8 +563,12 @@ function Ventas() {
 
             </div>
         </div>
-    <ModalTabla show={show} handleClose={handleClose} titulo={tituloModal} rows={row} columns={column} />
-
+        {
+        row.length>0 ?
+        (<ModalTabla show={show} handleClose={handleClose} titulo={tituloModal} rows={row} columns={column}/>)
+        :
+        console.log("No esta cargada la data....")
+        }
     </>
     )
 }

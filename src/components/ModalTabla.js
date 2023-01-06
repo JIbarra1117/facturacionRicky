@@ -1,18 +1,18 @@
-import React, {useState, useEffect} from 'react'
+import React, { useState, useEffect } from 'react'
 import Modal from 'react-bootstrap/Modal'
-import 'react-table'
 
 
-export const ModalTabla = ({ show, handleClose, titulo,rows, columns }) => {
-    const [productos,setProductos] = useState(rows);
+
+export const ModalTabla = ({ show, handleClose, titulo, rows, columns }) => {
+    const [productos, setProductos] = useState(rows);
     const [columnas, setColumnas] = useState(columns);
     console.log(productos);
     console.log(columns);
 
-    useEffect(()=>{ 
+    useEffect(() => {
         setColumnas(columns);
         setProductos(rows);
-    },[,columnas,rows])
+    }, [, columnas, rows])
     return (
         <>
             <Modal show={show} onHide={handleClose} size='xl' >
@@ -28,12 +28,11 @@ export const ModalTabla = ({ show, handleClose, titulo,rows, columns }) => {
                 </Modal.Header>
                 <Modal.Body>
                     {
-                        productos.length <1 ? (<h1>No hay data</h1>) : 
-                        productos.map((item)=>(
-                            <h1 key={item.idProducto}>{item.marca}</h1>
-                        ))
+                        productos.length < 1 ? (<h1>No hay data</h1>) :
+                            productos.map((item) => (
+                                <h1 key={item.idProducto}>{item.marca}</h1>
+                            ))
                     }
-                    
                 </Modal.Body>
 
             </Modal>

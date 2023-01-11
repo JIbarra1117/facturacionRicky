@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import Sidebar from "../components/SideBar";
 import Autosuggest from 'react-autosuggest';
 import NavBar from "../components/NavBar";
@@ -8,8 +8,10 @@ import Cookies from 'universal-cookie';
 import '../css/routes.css'
 import '../css/ventas.css'
 import 'bootstrap-icons/font/bootstrap-icons.css';
-import ModalTabla from '../components/ModalTabla';
+import ModalTabla from '../Modales/ModalTabla';
 import axios from 'axios';
+import { CheckCircle, XCircleFill } from 'react-bootstrap-icons';
+
 const cookies = new Cookies();
 
 function Ventas() {
@@ -27,6 +29,7 @@ function Ventas() {
     const [row, setRow] = useState([]);
     const [column, setColumn] = useState([]);
     const [tituloModal, setTituloModal] = useState("");
+    const [dataCompartida, setDataCompartida] = useState(null);
     //
 
     const [a_Productos, setA_Productos] = useState([]);
@@ -43,11 +46,10 @@ function Ventas() {
 
     useEffect(() => {
         solicitudProductos();
-       // console.log(productosGeneral)
-       // console.log(tituloModal)
     }, [])
 
     useEffect(() => {
+        console.log(productosGeneral);
         switch (tituloModal) {
             case "Productos":
                 setColumn(columnasProductos);
@@ -60,16 +62,105 @@ function Ventas() {
         }
     }, [tituloModal])
 
-    useEffect(()=>{
+    useEffect(() => {
+        console.log(row)
         handleShow();
-    },[row,column])
+    }, [row, column])
+
+    //Para ingresar data que del modal al padre ventas
+    useEffect(() => {
+        handleClose();
+        if (!(dataCompartida === null)) {
+            if (!(Object.keys(dataCompartida).length === 0)) {
+                console.log(dataCompartida)
+                //Insertar la data necesaria
+                switch (tituloModal) {
+                    case 'Productos':
+                        let producto = productos.filter(p => p.idProducto == dataCompartida.idProducto)[0];
+
+                        console.log(producto)
+                        if (producto == undefined) {
+                            console.log(dataCompartida);
+
+                            Swal.fire({
+                                title: "Producto\n" + dataCompartida.marca + " - " + dataCompartida.descripcion,
+                                html: `<p>Stock [` + dataCompartida.stock + `]<p/>
+                                  <p>Ingresa la cantidad<p/>
+                                  `,
+                                input: "number",
+                                inputAttributes: {
+                                    autocapitalize: 'off',
+                                    max: dataCompartida.stock,
+                                    min: 1
+                                },
+                                showCancelButton: true,
+                                confirmButtonText: 'Aceptar',
+                                cancelButtonText: 'Volver',
+                                showLoaderOnConfirm: true,
+                                preConfirm: (inputValue) => {
+
+                                    if (isNaN(inputValue) === true) {
+                                        setA_Busqueda("")
+                                        Swal.showValidationMessage(
+                                            "Debe ingresar un valor númerico"
+                                        )
+                                    } else {
+                                        //console.log(suggestion.stock+"  "+inputValue)
+                                        if (parseInt(inputValue) > dataCompartida.stock) {
+                                            setA_Busqueda("");
+                                            Swal.showValidationMessage("No hay suficiente stock");
+                                        } else {
+                                            let productoIngresar = {
+                                                idProducto: dataCompartida.idProducto,
+                                                descripcion: dataCompartida.descripcion,
+                                                cantidad: inputValue,//ver la forma de insertar un valor
+                                                precio: dataCompartida.precio,
+                                                total: dataCompartida.precio * (inputValue)
+                                            }
+                                            let array = [...productos, productoIngresar];
+                                            calcularTotal(array)
+                                            console.log(productoIngresar);
+                                            setProductos((anterior) => [...anterior, productoIngresar]);
+                                        }
+                                    }
+                                },
+                                allowOutsideClick: () => !Swal.isLoading()
+
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    setA_Busqueda("")
+                                } else {
+                                    setA_Busqueda("")
+                                }
+                            })
+
+                        } else {
+                            Swal.fire(
+                                'Opps!',
+                                'Ya haz seleccionado el producto [ ' + dataCompartida.marca + ' - ' + dataCompartida.descripcion + ' ]',
+                                'error'
+                            )
+                        }
+                        setDataCompartida(null);
+                        break;
+                    case 'Clientes':
+                        console.log(dataCompartida);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+    }, [dataCompartida])
+
 
     //Solicitud para obtener productos
     const solicitudProductos = async () => {
-        try{
+        try {
             const productos = await axios.get("http://localhost:8090/productos");
             setProductosGeneral(productos.data);
-        }catch(e){console.log(e)}
+        } catch (e) { console.log(e) }
     }
     //Solicitud para obtener productos
     const solicitudClientes = async () => {
@@ -80,50 +171,67 @@ function Ventas() {
     }
 
     const columnasProductos = [
+
         {
-            name: 'Id Producto',
-            selector: row => row.idProducto,
-            sortable: true,
+            Header: 'Id',
+            //id: 'idProducto',
+            accessor: 'idProducto',
+            show: false,
         },
         {
-            name: 'Código',
-            selector: row => row.codigo,
-            sortable: true,
+            Header: 'Codigo',
+            //id: 'codigo',
+            accessor: 'codigo',
         },
         {
-            name: 'Marca',
-            selector: row => row.marca,
-            sortable: true,
+            Header: 'Marca',
+            //id: 'marca',
+            accessor: 'marca'
         },
         {
-            name: 'Categoria',
-            selector: row => row.idCategoria,
-            sortable: true,
+            Header: 'Descripcion',
+            //id: 'descripcion',
+            accessor: 'descripcion'
         },
         {
-            name: 'Precio',
-            selector: row => row.precio,
-            sortable: true,
+            Header: 'Categoria',
+            //id: 'idCategoria',
+            accessor: 'idCategoria'
         },
         {
-            name: 'Activo',
-            selector: row => row.esActivo,
-            sortable: true,
+            Header: 'Stock' ,
+            //id: 'stock',
+            accessor: 'stock'
         },
         {
-            name: 'Fecha Registro',
-            selector: row => row.fechaRegistro,
-            sortable: true,
+            Header: 'Precio',
+            //id: 'precio',
+            accessor: 'precio',
+            Cell: ({cell}) => (<div className='text-end' style={{color:"green"}}> {cell.value} <span >$</span></div>)
         },
+        {
+            Header: 'Activo',
+            //id: 'esActivo',
+            accessor: 'esActivo',
+            Cell: ({ cell }) => cell.value ? (<div className='text-center'> <CheckCircle color='green' size={16} /></div>) :
+                (<XCircleFill color='red' size={16} />)
+        },
+        {
+            Header: 'Fecha Registro',
+            //id: 'fechaRegistro',
+            accessor: 'fechaRegistro',
+            Cell: ({ cell }) => formatDate(cell.value),
+        }
     ];
-    
-    const propsModalTabla= (titulo) => {
+
+
+    const propsModalTabla = (titulo) => {
         //solicitudProductos();
-        setTituloModal(titulo);  
-        if(row.length>0){
+        setTituloModal(titulo);
+        if (row.length > 0) {
             handleShow();
         }
-        }
+    }
 
     const reestablecer = () => {
         setDocumentoCliente("");
@@ -181,7 +289,7 @@ function Ventas() {
         value: a_Busqueda,
         onChange
     }
-    const sugerenciaValidada = (event, { suggestion, suggestionValue, suggestionIndex, sectionIndex, method }) => {
+    const sugerenciaValidada = (event, { suggestion }) => {//
         //buscar el producto que se repite en el detalle
         var validar = false //Se repite el producto?
         var producto = [...productos] //generar copia de productos
@@ -262,6 +370,14 @@ function Ventas() {
         }
     }
 
+    //Para pasar la data del modal al padre ventas
+
+    function handleProdutoModal(newValue) {
+        //newValue = [...newValue];
+
+        setDataCompartida(newValue);
+    }
+
     const eliminarProducto = (id) => {
 
         let listaproductos = productos.filter(p => p.idProducto !== id)
@@ -271,7 +387,70 @@ function Ventas() {
         calcularTotal(listaproductos)
     }
 
+    const editarStockProducto = (item) => {
+
+        let stock = productosGeneral.filter(p => p.idProducto == item.idProducto)[0].stock;
+
+        console.log(item);
+        Swal.fire({
+            title: "Editar cantidad del producto\n" + " > " + item.descripcion + " < ",
+            html: `<p>Stock [` + stock + `]<p/>
+                  <p>Ingresa la cantidad<p/>
+                  `,
+            input: "number",
+            inputAttributes: {
+                autocapitalize: 'off',
+                max: stock,
+                min: 1
+            },
+            showCancelButton: true,
+            confirmButtonText: 'Aceptar',
+            cancelButtonText: 'Volver',
+            showLoaderOnConfirm: true,
+            preConfirm: (inputValue) => {
+
+                if (isNaN(inputValue) === true) {
+                    setA_Busqueda("")
+                    Swal.showValidationMessage(
+                        "Debe ingresar un valor númerico"
+                    )
+                } else {
+                    if (parseInt(inputValue) > stock) {
+                        setA_Busqueda("");
+                        Swal.showValidationMessage("No hay suficiente stock");
+                    } else {
+
+                        eliminarProducto(item.idProducto)
+                        let producto = {
+                            idProducto: item.idProducto,
+                            descripcion: item.descripcion,
+                            cantidad: (inputValue),
+                            precio: item.precio,
+                            total: item.precio * (inputValue)
+                        }
+
+                        let arrayProductos = []
+                        arrayProductos.push(...productos)
+                        arrayProductos = arrayProductos.filter(p => p.idProducto !== producto.idProducto)
+                        arrayProductos.push(producto)
+                        setProductos((anterior) => [...anterior, producto])
+                        calcularTotal(arrayProductos)
+                    }
+                }
+            },
+            allowOutsideClick: () => !Swal.isLoading()
+
+        }).then((result) => {
+            if (result.isConfirmed) {
+                setA_Busqueda("")
+            } else {
+                setA_Busqueda("")
+            }
+        });
+    }
+
     const calcularTotal = (arrayProductos) => {
+        console.log(arrayProductos)
         let t = 0;
         let st = 0;
         let imp = 0;
@@ -369,9 +548,21 @@ function Ventas() {
             })
 
     }
-    
 
-    
+    //Métodos para establecer limpieza de datos
+
+    function formatDate(date) {
+        const d = new Date(date);
+        let month = '' + (d.getMonth() + 1);
+        let day = '' + d.getDate();
+        const year = d.getFullYear();
+
+        if (month.length < 2) month = '0' + month;
+        if (day.length < 2) day = '0' + day;
+
+        return [year, month ,day].join('-');
+    }
+
     return (<>
 
         <div className="flex">
@@ -405,7 +596,7 @@ function Ventas() {
                                                 </Col>
                                                 <Col sm={6}>
                                                     <FormGroup>
-                                                        <button type="button" className='btn btn-outline-light' title="Tooltip on right" onClick={()=>propsModalTabla("Clientes")}>
+                                                        <button type="button" className='btn btn-outline-light' title="Tooltip on right" onClick={() => propsModalTabla("Clientes")}>
                                                             <i className="bi bi-receipt-cutoff"></i>
                                                         </button>
                                                     </FormGroup>
@@ -440,7 +631,7 @@ function Ventas() {
                                                 </Col>
                                                 <Col sm={1}>
                                                     <FormGroup>
-                                                        <button type="button" className='btn btn-outline-light' title="Tooltip on right" onClick={()=>propsModalTabla("Productos")}>
+                                                        <button type="button" className='btn btn-outline-light' title="Tooltip on right" onClick={() => propsModalTabla("Productos")}>
                                                             <i className="bi bi-receipt-cutoff"></i>
                                                         </button>
                                                     </FormGroup>
@@ -470,15 +661,19 @@ function Ventas() {
                                                                             <tr key={item.idProducto} >
                                                                                 <td >
                                                                                     <Button color="danger" size="sm"
-                                                                                        onClick={() => eliminarProducto(item.idProducto)}
-                                                                                    >
+                                                                                        onClick={() => eliminarProducto(item.idProducto)}>
                                                                                         <i className="fas fa-trash-alt"></i>
+                                                                                    </Button>
+                                                                                    <Button
+                                                                                        color="success" size="sm"
+                                                                                        onClick={() => editarStockProducto(item)}>
+                                                                                        <i className="fas fa-edit"></i>
                                                                                     </Button>
                                                                                 </td>
                                                                                 <td style={{ color: "white" }}>{item.descripcion}</td>
                                                                                 <td style={{ color: "white" }}>{item.cantidad}</td>
-                                                                                <td style={{ color: "white", textAlign: "right" }}>{item.precio}</td>
-                                                                                <td style={{ color: "white", textAlign: "right" }}>{item.total}</td>
+                                                                                <td style={{ color: "white", textAlign: "right" }}>{(item.precio).toFixed(2)}</td>
+                                                                                <td style={{ color: "white", textAlign: "right" }}>{(item.total).toFixed(2)}</td>
                                                                             </tr>
                                                                         ))
                                                                     )
@@ -564,10 +759,10 @@ function Ventas() {
             </div>
         </div>
         {
-        row.length>0 ?
-        (<ModalTabla show={show} handleClose={handleClose} titulo={tituloModal} rows={row} columns={column}/>)
-        :
-        console.log("No esta cargada la data....")
+            row.length > 0 ?
+                (<ModalTabla show={show} handleClose={handleClose} titulo={tituloModal} DATA={row} COLUMNS={column} onChange={handleProdutoModal} />)
+                :
+                console.log("No esta cargada la data....")
         }
     </>
     )

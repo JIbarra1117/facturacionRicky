@@ -11,6 +11,7 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 import ModalTabla from '../Modales/ModalTabla';
 import axios from 'axios';
 import { CheckCircle, XCircleFill } from 'react-bootstrap-icons';
+import ModaleDetalleFactura from '../Modales/detalleModalFactura';
 
 const cookies = new Cookies();
 
@@ -23,6 +24,15 @@ function Ventas() {
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
 
+    // Propiedades para el modal productos
+    const [showFact, setshowFact] = useState(false);
+
+    const handleCloseFact = () => setshowFact(false);
+    const handleShowFact = () => setshowFact(true);
+
+    const [factCreada, setFactCreada] = useState(null);
+    const [productosFact, setProductosFact] = useState(null);
+
     const [productosGeneral, setProductosGeneral] = useState([]);
     const [clientesGeneral, setClientesGeneral] = useState([]);
 
@@ -31,7 +41,7 @@ function Ventas() {
     const [tituloModal, setTituloModal] = useState("");
     const [dataCompartida, setDataCompartida] = useState(null);
     //
-
+    const [dataCliente,setDataCliente]= useState([])
     const [a_Productos, setA_Productos] = useState([]);
     const [a_Busqueda, setA_Busqueda] = useState("");
 
@@ -44,11 +54,15 @@ function Ventas() {
     const [subTotal, setSubTotal] = useState(0);
     const [igv, setIgv] = useState(0);
 
+    const fecha = new Date();
+
     useEffect(() => {
         solicitudProductos();
+        solicitudClientes();
     }, [])
 
     useEffect(() => {
+        console.log(clientesGeneral);
         console.log(productosGeneral);
         switch (tituloModal) {
             case "Productos":
@@ -56,18 +70,18 @@ function Ventas() {
                 setRow(productosGeneral);
                 break;
             case "Clientes":
-                setRow(productosGeneral);
-                setColumn(columnasProductos);
+                setRow(clientesGeneral);
+                setColumn(columnasClientes);
                 break;
         }
-    }, [tituloModal])
+    }, [tituloModal,clientesGeneral,productosGeneral])
 
     useEffect(() => {
         console.log(row)
         handleShow();
     }, [row, column])
 
-    //Para ingresar data que del modal al padre ventas
+    //Para ingresar data del padre al modal ventas
     useEffect(() => {
         handleClose();
         if (!(dataCompartida === null)) {
@@ -144,7 +158,9 @@ function Ventas() {
                         setDataCompartida(null);
                         break;
                     case 'Clientes':
-                        console.log(dataCompartida);
+                        console.log(dataCompartida)
+                        setNombreCliente(dataCompartida.nombre+" "+dataCompartida.apellido);
+                        setDocumentoCliente(dataCompartida.cedulaCliente);
                         break;
                     default:
                         break;
@@ -154,7 +170,24 @@ function Ventas() {
 
     }, [dataCompartida])
 
+    useEffect(()=>{
+        //console.log(factCreada)
+        //Ejecutar solicitud de productos de factura para validar el ingreso jeje
+        if(factCreada!=null){solicitudProductosFact()}else{console.log("No vale")}      
+    },[factCreada])
 
+    
+    useEffect(()=>{
+        if(productosFact!=null){
+            handleShowFact()
+        }
+    },[productosFact])
+
+    useEffect(()=>{
+        if(!show){
+            //setRow([])
+        }
+    },[show])
     //Solicitud para obtener productos
     const solicitudProductos = async () => {
         try {
@@ -164,11 +197,31 @@ function Ventas() {
     }
     //Solicitud para obtener productos
     const solicitudClientes = async () => {
-        await axios.get("http://localhost:8090/productos")
+        await axios.get("http://localhost:8090/clientes")
             .then(response => {
                 setClientesGeneral(response.data)
             })
     }
+    const solicitudProductosFact = async () => {
+
+        const json = JSON.stringify({
+          numeroDocumento: factCreada.numeroDocumento.toString()
+        });
+        await axios.post("http://localhost:8090/facturas",
+          json,
+          {
+            headers: {
+              // Overwrite Axios's automatically set Content-Type
+              'Content-Type': 'application/json'
+            }
+          })
+          .then((res) => {
+            //console.log(res.data)
+            setProductosFact(res.data);
+          }).catch((error) => {
+            console.log(error)
+          })
+      }
 
     const columnasProductos = [
 
@@ -224,9 +277,28 @@ function Ventas() {
         }
     ];
 
+    const columnasClientes = [
 
+        {
+            Header: 'Cedula',
+            //id: 'idProducto',
+            accessor: 'cedulaCliente',
+            show: false,
+        },
+        {
+            Header: 'Nombres',
+            //id: 'codigo',
+            accessor: 'nombre',
+        },
+        {
+            Header: 'Apellidos',
+            //id: 'marca',
+            accessor: 'apellido'
+        },];
+        
     const propsModalTabla = (titulo) => {
-        //solicitudProductos();
+        solicitudProductos();
+        solicitudClientes();
         setTituloModal(titulo);
         if (row.length > 0) {
             handleShow();
@@ -236,11 +308,11 @@ function Ventas() {
     const reestablecer = () => {
         setDocumentoCliente("");
         setNombreCliente("")
-        setTipoDocumento("Factura")
         setProductos([])
         setTotal(0)
         setSubTotal(0)
         setIgv(0)
+        setDataCliente({})
     }
 
     //para obtener la lista de sugerencias
@@ -475,9 +547,7 @@ function Ventas() {
     }
 
     const terminarVenta = () => {
-
-
-        if (documentoCliente.length < 1) {
+        if (nombreCliente.length <1) {
             Swal.fire(
                 'Opps!',
                 'La cedula del cliente no ha sido asignado',
@@ -485,7 +555,7 @@ function Ventas() {
             )
             return
         } else {
-            if (nombreCliente.length < 1) {
+            if (documentoCliente.length < 1) {
                 Swal.fire(
                     'Opps!',
                     'El cliente no ha sido asignado',
@@ -504,8 +574,6 @@ function Ventas() {
             }
         }
 
-
-
         let venta = {
             documentoCliente: documentoCliente,
             nombreCliente: nombreCliente,
@@ -516,6 +584,7 @@ function Ventas() {
             total: parseFloat(total),
             productos: productos
         }
+
         //console.log(venta)
 
         const api = fetch("http://localhost:8090/ventas", {
@@ -537,7 +606,11 @@ function Ventas() {
                     'Numero de venta : ' + data.numeroDocumento,
                     'success'
                 )
-
+                
+                setFactCreada({...venta,
+                                numeroDocumento:data.numeroDocumento,
+                                fechaRegistro:  fecha.getFullYear().toString(),
+                            Empleado:cookies.get('sesion_usuario').nombre + " "+ cookies.get('sesion_usuario').apellido});
             }).catch((error) => {
                 Swal.fire(
                     'Opps!',
@@ -581,24 +654,17 @@ function Ventas() {
                                     </CardHeader>
                                     <CardBody className='text-white'>
                                         <div className='container-fluid'>
-                                            <Row >
+                                            <Row onClick={() => propsModalTabla("Clientes")} style={{cursor:"pointer"}}>
                                                 <Col sm={6}>
                                                     <FormGroup>
                                                         <Label>Número de cédula</Label>
-                                                        <Input bsSize="sm" value={documentoCliente} onChange={(e) => setDocumentoCliente(e.target.value)} />
+                                                        <Input  disabled style={{cursor:"pointer"}} bsSize="sm" value={documentoCliente}  onChange={(e) => setDocumentoCliente(e.target.value)} />
                                                     </FormGroup>
                                                 </Col>
                                                 <Col sm={6}>
                                                     <FormGroup>
                                                         <Label>Nombres</Label>
-                                                        <Input bsSize="sm" value={nombreCliente} onChange={(e) => setNombreCliente(e.target.value)} />
-                                                    </FormGroup>
-                                                </Col>
-                                                <Col sm={6}>
-                                                    <FormGroup>
-                                                        <button type="button" className='btn btn-outline-light' title="Tooltip on right" onClick={() => propsModalTabla("Clientes")}>
-                                                            <i className="bi bi-receipt-cutoff"></i>
-                                                        </button>
+                                                        <Input disabled style={{cursor:"pointer"}} bsSize="sm" value={nombreCliente}  onChange={(e) => setNombreCliente(e.target.value)} />
                                                     </FormGroup>
                                                 </Col>
                                             </Row>
@@ -764,6 +830,14 @@ function Ventas() {
                 :
                 console.log("No esta cargada la data....")
         }
+
+        {
+            showFact ?
+                (<ModaleDetalleFactura show={showFact} handleClose={handleCloseFact} dataFactura={factCreada}  />)
+                :
+                console.log("No esta cargada la data en el modal....")
+        }
+        
     </>
     )
 }

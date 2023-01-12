@@ -82,13 +82,21 @@ export const ModaleDetalleFactura = ({ dataFactura, show, handleClose }) => {
           </div>
           <div className='row'>
             <div className='col'>
-              Cliente: {facturaGeneral.nombreCliente}
+                Cliente: 
+            </div>            
+            <div className='col-10'>
+              {facturaGeneral.nombreCliente}
             </div>
-            <div className='col'>
-              Cédula: {facturaGeneral.documentoCliente}
-            </div>
-          </div>
 
+          </div>
+          <div className='row'>
+          <div className='col'>
+            Cédula: 
+          </div>
+          <div className='col-10'>
+          {facturaGeneral.documentoCliente}
+          </div>
+          </div>
           <div className='row'>
             <div className='col'>
               <table class="table">
@@ -110,8 +118,8 @@ export const ModaleDetalleFactura = ({ dataFactura, show, handleClose }) => {
                           <td>{producto.marca}</td>
                           <td>{producto.descripcion}</td>
                           <td>{producto.cantidad}</td>
-                          <td className='text-end' style={{color:"green"}}>{producto.precio.toFixed(2)}</td>
-                          <td className='text-end' style={{color:"green"}}>{producto.total.toFixed(2)}</td>
+                          <td className='text-end' style={{color:""}}>{producto.precio.toFixed(2)} {" $"}</td>
+                          <td className='text-end' style={{color:""}}>{producto.total.toFixed(2)} {" $"}</td>
                         </tr>
                       )
                     }) : "No hay datos"
@@ -121,21 +129,21 @@ export const ModaleDetalleFactura = ({ dataFactura, show, handleClose }) => {
                     <td className='border-0'></td>
                     <td className='border-0'></td>
                     <td className='text-end border-0'><b>Subtotal:</b></td>
-                    <td className='text-end border-0' style={{color:"green"}}>{(facturaGeneral.subTotal).toFixed(2)}{"$"}</td>
+                    <td className='text-end border-0' style={{color:"green"}}>{(facturaGeneral.subTotal).toFixed(2)}{" $"}</td>
                   </tr>
                   <tr >
                   <td className='border-0'></td>
                     <td className='border-0'></td>
                     <td className='border-0'></td>
                     <td className='text-end border-0'><b>IVA 12%:</b></td>
-                    <td className='text-end border-0' style={{color:"green"}}>{(facturaGeneral.total-facturaGeneral.subTotal).toFixed(2)}</td>
+                    <td className='text-end border-0' style={{color:"green"}}>{(facturaGeneral.total-facturaGeneral.subTotal).toFixed(2)} {" $"}</td>
                   </tr>
                   <tr >
                   <td className='border-0'></td>
                     <td className='border-0'></td>
                     <td className='border-0'></td>
                     <td className='text-end border-0'><b>Total:</b></td>
-                    <td className='text-end border-0' style={{color:"green"}}>{facturaGeneral.total.toFixed(2)}</td>
+                    <td className='text-end border-0' style={{color:"green"}}>{facturaGeneral.total.toFixed(2)} {" $"}</td>
                   </tr>
                 </tbody>
               </table>

@@ -2,18 +2,33 @@ import React, { useState, useEffect } from 'react'
 import Modal from 'react-bootstrap/Modal'
 import { useSortBy, useTable, useGlobalFilter } from 'react-table';
 import { GlobalFilter } from '../components/TableModal/GlobalFilter';
-
+import ModalCliente from './ModalCliente';
 
 export const ModalTabla = ({ show, handleClose, titulo, DATA, COLUMNS,onChange }) => {
     const [dataSeleccionada, setDataSelecciona] = useState({});
-    const columns = React.useMemo(() => COLUMNS, []);
-    const data = React.useMemo(() => DATA, []);
+    // Propiedades para el modal productos
+    const [showCli, setShowCli] = useState(false);
+
+    const handleCloseCli = () => setShowCli(false);
+    const handleShowCli = () => setShowCli(true);
+
+    var columns = React.useMemo(() => {
+        let columnasA = COLUMNS;
+        return columnasA
+    });
+    var data = React.useMemo(() => {
+        let datos = DATA;
+        return datos
+    });
     const initialState = { hiddenColumns: ['idProducto'] };
 
     function handleButtonClickProducto() {
         onChange(dataSeleccionada);
     }
-    
+    console.log(DATA)
+    console.log(COLUMNS)
+    console.log(data)
+    console.log(columns)
     useEffect(()=>{
         console.log(dataSeleccionada);
         handleButtonClickProducto();
@@ -35,8 +50,20 @@ export const ModalTabla = ({ show, handleClose, titulo, DATA, COLUMNS,onChange }
     } = tableInstance;
     const {globalFilter} = state;
 
-
-
+    function abrirModalCli(){
+        handleShowCli();
+        cerrarModal();        
+    }
+        
+    function cerrarModal(){
+        columns={};
+        data={};
+        handleClose();
+        //setDataSelecciona({});
+    }
+    function handleClienteInsertado(newValue){
+        setDataSelecciona(newValue);
+    }
     return (
         <>
             <Modal show={show} onHide={handleClose} size='xl' >
@@ -47,12 +74,22 @@ export const ModalTabla = ({ show, handleClose, titulo, DATA, COLUMNS,onChange }
                         className="btn-close"
                         data-bs-dismiss="modal"
                         aria-label="Close"
-                        onClick={handleClose}>
+                        onClick={()=> cerrarModal()}>
                     </button>
                 </Modal.Header>
                 <Modal.Body>
                     <div className='container-fluid'>
-                        <GlobalFilter filter={globalFilter} setFilter={setGlobalFilter}/>
+                    <div className='row'>
+
+                        <div className='col'><GlobalFilter filter={globalFilter} setFilter={setGlobalFilter}/></div>                        
+                        <div className='col'>
+                            {titulo=="Clientes"?
+                        (
+                        <button className='btn btn-outline-success' onClick={()=>abrirModalCli()}>Crear cliente</button>
+                        ):""}
+                        </div>
+                        
+                        </div>
                         <table className='table table-hover table-responsive' {...getTableProps()}>
                             <thead>
                                 {headerGroups.map(headerGroup => (
@@ -86,7 +123,13 @@ export const ModalTabla = ({ show, handleClose, titulo, DATA, COLUMNS,onChange }
                     </div>
                 </Modal.Body>
 
-            </Modal>
+            </Modal>            
+        {
+            showCli?
+            (<ModalCliente showCli={showCli} handleCloseCli={handleCloseCli}  onChange={handleClienteInsertado} />)
+            :
+            ""
+        }
         </>
     )
 }

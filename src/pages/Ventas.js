@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect } from 'react'
 import Sidebar from "../components/SideBar";
 import Autosuggest from 'react-autosuggest';
 import NavBar from "../components/NavBar";

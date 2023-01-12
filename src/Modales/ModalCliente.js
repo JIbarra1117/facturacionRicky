@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import Modal from 'react-bootstrap/Modal'
 import Swal from 'sweetalert2';
 import axios from 'axios';
-import { validarCedula } from '../controllers/validaciones';
+import { validarCedula,isValidNumber,isValidWords } from '../controllers/validaciones';
 
 export const ModalCliente = ({ showCli, handleCloseCli, onChange }) => {
     const [data, setData] = useState({});
@@ -11,8 +11,50 @@ export const ModalCliente = ({ showCli, handleCloseCli, onChange }) => {
     const [apellido, setApellido] = useState("");
     const [nombre2, setNombre2] = useState("");
     const [apellido2, setApellido2] = useState("");
-
-
+    //Getters y Setters para la validacion de elementos
+    const [isValidCedula, setIsValidCedula] = useState(false);
+    const [isValidNombre1, setIsValidNombre1] = useState(false);
+    const [isValidApellido1, setIsValidApellido1] = useState(false);
+    const [isValidNombre2, setIsValidNombre2] = useState(false);
+    const [isValidApellido2, setIsValidApellido2] = useState(false);
+        //Metodos para implementacion de validaciones
+    useEffect(()=>{
+        
+        if(!showCli) {reestablecer()}
+    },[])
+        function handleChangeValidarCedula(event) {
+            
+            const newValue = event.target.value;
+            console.log(newValue)
+            setCedula(isValidNumber(newValue)?newValue:'')
+            setIsValidCedula(newValue.length==10?validarCedula(newValue):false)
+        }
+        function handleChangeSoloLetrasNombre(event) {
+            if (isValidWords(event.target.value)) {
+                setNombre(event.target.value);
+            }
+        }
+        
+        function handleChangeSoloLetrasApellido(event) {
+            const newValue = event.target.value;
+            if (isValidWords(newValue)) {
+                setApellido(newValue);
+            }
+        }
+        function handleChangeSoloLetrasNombre2(event) {
+            const newValue = event.target.value;
+            if (isValidWords(newValue)) {
+                setNombre2(newValue);
+            }
+        }
+        
+        function handleChangeSoloLetrasApellido2(event) {
+            const newValue = event.target.value;
+            if (isValidWords(newValue)) {
+                setApellido2(newValue);
+            }
+        }
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////        
     useEffect(() => {
         handleButtonClickProducto();
     }, data)
@@ -64,6 +106,14 @@ export const ModalCliente = ({ showCli, handleCloseCli, onChange }) => {
             )
         }
     }
+    const reestablecer=()=>{
+        setApellido("")
+        setApellido2("")
+        setCedula("")
+        setNombre("")
+        setNombre2("")
+        
+    }
     const ingresarCliente = async () => {
         const json = JSON.stringify({
             cedulaCliente: cedula,
@@ -86,6 +136,7 @@ export const ModalCliente = ({ showCli, handleCloseCli, onChange }) => {
                     'Cédula: ' + JSON.parse(json).cedulaCliente + '\n Nombres: ' + JSON.parse(json).nombre + '\n Apellidos: ' + JSON.parse(json).apellido,
                     'success'
                 )
+                reestablecer();
                 handleCloseCli();
                 //setProductosFact(res.data);
             }).catch((error) => {
@@ -96,38 +147,6 @@ export const ModalCliente = ({ showCli, handleCloseCli, onChange }) => {
                 )
                 console.log(error)
             })
-    }
-    function handleChangeSoloNumeros(event) {
-        const newValue = event.target.value;
-        if (/^\d*\.?\d*$/.test(newValue)) {
-            setCedula(newValue);
-        }
-    }
-    function handleChangeSoloLetrasNombre(event) {
-        const newValue = event.target.value;
-        if (/^[A-Za-zÑñ]*$/.test(newValue)) {
-            setNombre(newValue);
-        }
-    }
-    
-    function handleChangeSoloLetrasApellido(event) {
-        const newValue = event.target.value;
-        if (/^[A-Za-zÑñ]*$/.test(newValue)) {
-            setApellido(newValue);
-        }
-    }
-    function handleChangeSoloLetrasNombre2(event) {
-        const newValue = event.target.value;
-        if (/^[A-Za-zÑñ]*$/.test(newValue)) {
-            setNombre2(newValue);
-        }
-    }
-    
-    function handleChangeSoloLetrasApellido2(event) {
-        const newValue = event.target.value;
-        if (/^[A-Za-zÑñ]*$/.test(newValue)) {
-            setApellido2(newValue);
-        }
     }
 
     return (
@@ -156,11 +175,19 @@ export const ModalCliente = ({ showCli, handleCloseCli, onChange }) => {
                                                 <div class="input-group-prepend">
                                                     <span class="input-group-text" id="basic-addon1">No. Cedula</span>
                                                 </div>
-                                                <input type="text" class="form-control" aria-describedby="basic-addon1"
+                                                <input type="text" class={`form-control ${!isValidCedula ? 'is-invalid' : 'is-valid'}`} aria-describedby="basic-addon1"
                                                     maxLength={10}
                                                     value={cedula}
-                                                    onChange={handleChangeSoloNumeros/*(e) => setCedula(e.target.value)*/}
+                                                    onChange={(e) => handleChangeValidarCedula(e)}
                                                 />
+                                                <div className="invalid-feedback">
+                                                    {
+                                                        cedula.length==0?"Cedula requerida":"Cedula incorrecta"
+                                                    }
+                                                </div>
+                                                <div className="valid-feedback">
+                                                    Cedula correcta!
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -172,11 +199,11 @@ export const ModalCliente = ({ showCli, handleCloseCli, onChange }) => {
                                                 </div>
                                                 <input type="text" class="form-control" aria-describedby="basic-addon1"
                                                     value={nombre}
-                                                    onChange={handleChangeSoloLetrasNombre/*(e) => setNombre(e.target.value)*/}
+                                                    onChange={(e) => isValidWords(e.target.value)?setNombre(e.target.value)&&setIsValidNombre1(isValidWords(e.target.value)):e.target.value&&setIsValidNombre1(isValidWords(e.target.value))}
                                                 />
                                                 <input type="text" class="form-control" aria-describedby="basic-addon1"
                                                     value={nombre2}
-                                                    onChange={handleChangeSoloLetrasNombre2/*(e) => setNombre(e.target.value)*/}
+                                                    onChange={(e) => isValidWords(e.target.value)?setNombre2(e.target.value)&&setIsValidNombre2(isValidWords(e.target.value)):e.target.value&&setIsValidNombre2(isValidWords(e.target.value))}
                                                 />
                                             </div>
                                         </div>
@@ -189,11 +216,11 @@ export const ModalCliente = ({ showCli, handleCloseCli, onChange }) => {
                                                 </div>
                                                 <input type="text" class="form-control" aria-describedby="basic-addon1"
                                                     value={apellido}
-                                                    onChange={handleChangeSoloLetrasApellido/*(e) => setApellido(e.target.value)*/}
+                                                    onChange={(e) => isValidWords(e.target.value)?setApellido(e.target.value)&&setIsValidApellido1(isValidWords(e.target.value)):e.target.value&&setIsValidApellido1(isValidWords(e.target.value))}
                                                 />
                                                 <input type="text" class="form-control" aria-describedby="basic-addon1"
                                                 value={apellido2}
-                                                onChange={handleChangeSoloLetrasApellido2/*(e) => setApellido(e.target.value)*/}
+                                                onChange={(e) => isValidWords(e.target.value)?setApellido2(e.target.value)&&setIsValidApellido2(isValidWords(e.target.value)):e.target.value&&setIsValidApellido2(isValidWords(e.target.value))}
                                             />
                                             </div>
                                         </div>
@@ -202,19 +229,18 @@ export const ModalCliente = ({ showCli, handleCloseCli, onChange }) => {
                                         <div className='col'><span> </span></div>
                                     </div>
                                 </div>
-                                <div className='col-3'>
+
+                            </div>
+                        </form>
+                        <div className='col-3'>
                                     <button
                                         className='btn btn-outline-success'
-                                        type="button"
                                         data-bs-dismiss="modal"
                                         aria-label="Close"
                                         onClick={() => subirCliente()}>
                                         Ingresar
                                     </button>
                                 </div>
-                            </div>
-                        </form>
-
                     </div>
 
                 </Modal.Body>

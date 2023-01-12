@@ -87,3 +87,12 @@ export function Numeros(string){//Solo numeros
     //Retornar valor filtrado
     return out;
 } 
+
+//funcion para eventos solo letras
+export function isValidWords(value) {
+    return /^[A-Za-zÑñ]*$/.test(value);
+}
+
+export function isValidNumber(value) {
+    return /^\d*\.?\d*$/.test(value);
+}

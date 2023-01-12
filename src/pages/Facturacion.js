@@ -20,8 +20,6 @@ class Facturacion extends Component {
     }
 
     render() {
-
-        console.log(usuario);
         return (
             <>
 

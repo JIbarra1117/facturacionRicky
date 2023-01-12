@@ -18,7 +18,6 @@ class Facturacion extends Component {
     componentDidMount() {
         if (!cookies.get('sesion_usuario')) { window.location.href = "./" };
     }
-
     render() {
         return (
             <>

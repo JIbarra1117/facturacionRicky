@@ -57,8 +57,9 @@ function Ventas() {
     const fecha = new Date();
 
     useEffect(() => {
+        if (!cookies.get('sesion_usuario')) { window.location.href = "./" }else{
         solicitudProductos();
-        solicitudClientes();
+        solicitudClientes();}
     }, [])
 
     useEffect(() => {
@@ -175,7 +176,6 @@ function Ventas() {
         //Ejecutar solicitud de productos de factura para validar el ingreso jeje
         if(factCreada!=null){solicitudProductosFact()}else{console.log("No vale")}      
     },[factCreada])
-
     
     useEffect(()=>{
         if(productosFact!=null){

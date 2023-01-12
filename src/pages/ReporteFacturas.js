@@ -3,11 +3,14 @@ import Sidebar from '../components/SideBar'
 import '../css/routes.css'
 import axios from 'axios';
 import NavBar from '../components/NavBar';
+import Cookies from "universal-cookie";
 import { useSortBy, useTable, useGlobalFilter, usePagination } from 'react-table';
 import { GlobalFilter } from '../components/TableModal/GlobalFilter';
 import { Card, CardBody, CardHeader } from 'reactstrap';
 import ModaleDetalleFactura from '../Modales/detalleModalFactura';
 
+const cookies = new Cookies();
+var usuario = cookies.get('sesion_usuario') === undefined ? "" : cookies.get('sesion_usuario');
 export function ReporteFacturas() {
   const [facturas, setFacturas] = useState([]);
   const initialState = { hiddenColumns: ['idVenta'] };
@@ -24,8 +27,8 @@ export function ReporteFacturas() {
       setFacturas(facturas.data);
     } catch (e) { console.log(e) }
   }
-  useEffect(() => {
-    solicitudProductos();
+  useEffect(() => {if (!cookies.get('sesion_usuario')) { window.location.href = "./" }else{
+    solicitudProductos();}
   }, [])
 
 

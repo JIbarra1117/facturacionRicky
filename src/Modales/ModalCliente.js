@@ -132,10 +132,17 @@ export const ModalCliente = ({ showCli, handleCloseCli, onChange }) => {
             .then((res) => {
                 console.log(res.status)
                 Swal.fire(
-                    'Cliente ingresado correctamente!',
+                    'Oops! Cliente ingresado correctamente!',
                     'Cédula: ' + JSON.parse(json).cedulaCliente + '\n Nombres: ' + JSON.parse(json).nombre + '\n Apellidos: ' + JSON.parse(json).apellido,
                     'success'
                 )
+                if(res.status == 500){
+                    Swal.fire(
+                        'Cliente concurrido!',
+                        'Ya existe el cliente en la Base de datos',
+                        'error'
+                    )   
+                }
                 reestablecer();
                 handleCloseCli();
                 //setProductosFact(res.data);

@@ -19,8 +19,7 @@ export const ModalCliente = ({ showCli, handleCloseCli, onChange }) => {
     const [isValidApellido2, setIsValidApellido2] = useState(false);
         //Metodos para implementacion de validaciones
     useEffect(()=>{
-        
-        if(!showCli) {reestablecer()}
+
     },[])
         function handleChangeValidarCedula(event) {
             
@@ -55,10 +54,10 @@ export const ModalCliente = ({ showCli, handleCloseCli, onChange }) => {
             }
         }
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////        
-    useEffect(() => {
+/*    useEffect(() => {
         handleButtonClickProducto();
     }, data)
-
+*/
     function cerrarModal() {
         handleCloseCli();
     }
@@ -130,29 +129,29 @@ export const ModalCliente = ({ showCli, handleCloseCli, onChange }) => {
                 }
             })
             .then((res) => {
+
                 console.log(res.status)
-                Swal.fire(
-                    'Oops! Cliente ingresado correctamente!',
-                    'Cédula: ' + JSON.parse(json).cedulaCliente + '\n Nombres: ' + JSON.parse(json).nombre + '\n Apellidos: ' + JSON.parse(json).apellido,
-                    'success'
-                )
-                if(res.status == 500){
                     Swal.fire(
-                        'Cliente concurrido!',
-                        'Ya existe el cliente en la Base de datos',
-                        'error'
-                    )   
-                }
+                        'Cliente ingresado correctamente!',
+                        'Cédula: ' + JSON.parse(json).cedulaCliente + '\n Nombres: ' + JSON.parse(json).nombre + '\n Apellidos: ' + JSON.parse(json).apellido,
+                        'success'
+                    )
+                
                 reestablecer();
                 handleCloseCli();
                 //setProductosFact(res.data);
             }).catch((error) => {
-                Swal.fire(
+                if(error){Swal.fire(
+                    'Cliente concurrido!',
+                    'Ya existe el cliente en la Base de datos',
+                    'error'
+                )   }
+               /* Swal.fire(
                     'Opps!',
                     'El servidor no responde'+'\n'+error,
                     'error'
-                )
-                console.log(error)
+                )*/
+                console.log(error.status)
             })
     }
 

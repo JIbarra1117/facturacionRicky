@@ -12,6 +12,7 @@ import ModalTabla from '../Modales/ModalTabla';
 import axios from 'axios';
 import { CheckCircle, XCircleFill } from 'react-bootstrap-icons';
 import ModaleDetalleFactura from '../Modales/detalleModalFactura';
+import ModalCliente from '../Modales/ModalCliente';
 
 const cookies = new Cookies();
 
@@ -54,7 +55,6 @@ function Ventas() {
     const [subTotal, setSubTotal] = useState(0);
     const [igv, setIgv] = useState(0);
 
-    const fecha = new Date();
 
     useEffect(() => {
         if (!cookies.get('sesion_usuario')) { window.location.href = "./" }else{
@@ -361,6 +361,7 @@ function Ventas() {
         value: a_Busqueda,
         onChange
     }
+    // Validar que los productos no se repitan en el detalle
     const sugerenciaValidada = (event, { suggestion }) => {//
         //buscar el producto que se repite en el detalle
         var validar = false //Se repite el producto?
@@ -446,7 +447,7 @@ function Ventas() {
 
     function handleProdutoModal(newValue) {
         //newValue = [...newValue];
-
+        console.log(newValue)
         setDataCompartida(newValue);
     }
 
@@ -606,10 +607,10 @@ function Ventas() {
                     'Numero de venta : ' + data.numeroDocumento,
                     'success'
                 )
-                
+                const tiempoTranscurrido = Date.now();
                 setFactCreada({...venta,
                                 numeroDocumento:data.numeroDocumento,
-                                fechaRegistro:  fecha.getFullYear().toString(),
+                                fechaRegistro:  new Date(tiempoTranscurrido),
                             Empleado:cookies.get('sesion_usuario').nombre + " "+ cookies.get('sesion_usuario').apellido});
             }).catch((error) => {
                 Swal.fire(
@@ -833,7 +834,8 @@ function Ventas() {
 
         {
             showFact ?
-                (<ModaleDetalleFactura show={showFact} handleClose={handleCloseFact} dataFactura={factCreada}  />)
+                (<ModaleDetalleFactura show={showFact} handleClose={handleCloseFact} dataFactura={factCreada}  />
+                )
                 :
                 console.log("No esta cargada la data en el modal....")
         }

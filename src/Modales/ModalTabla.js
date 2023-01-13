@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import Modal from 'react-bootstrap/Modal'
-import { useSortBy, useTable, useGlobalFilter } from 'react-table';
+import { useSortBy, useTable, useGlobalFilter, usePagination } from 'react-table';
 import { GlobalFilter } from '../components/TableModal/GlobalFilter';
 import ModalCliente from './ModalCliente';
 
-export const ModalTabla = ({ show, handleClose, titulo, DATA, COLUMNS,onChange }) => {
+export const ModalTabla = ({ show, handleClose, titulo, DATA, COLUMNS, onChange }) => {
     const [dataSeleccionada, setDataSelecciona] = useState({});
     // Propiedades para el modal productos
     const [showCli, setShowCli] = useState(false);
@@ -20,7 +20,7 @@ export const ModalTabla = ({ show, handleClose, titulo, DATA, COLUMNS,onChange }
         let datos = DATA;
         return datos
     });
-    const initialState = { hiddenColumns: ['idProducto'] };
+    const initialState = { hiddenColumns: ['idProducto', 'esActivo'] };
 
     function handleButtonClickProducto() {
         onChange(dataSeleccionada);
@@ -29,41 +29,48 @@ export const ModalTabla = ({ show, handleClose, titulo, DATA, COLUMNS,onChange }
     console.log(COLUMNS)
     console.log(data)
     console.log(columns)
-    useEffect(()=>{
+    useEffect(() => {
         console.log(dataSeleccionada);
         handleButtonClickProducto();
-    },[dataSeleccionada]);
+    }, [dataSeleccionada]);
 
     const tableInstance = useTable({
         columns,
         data,
         initialState,
-    },useGlobalFilter, useSortBy);
+    }, useGlobalFilter, useSortBy, usePagination);
     const {
         getTableProps, // table props from react-table
         getTableBodyProps, // table body props from react-table
         headerGroups, // headerGroups, if your table has groupings
-        rows, // rows for the table based on the data passed
+        page, // rows for the table based on the data passed
+        nextPage,
+        previousPage,
+        canNextPage,
+        canPreviousPage,
+        pageOptions,
         prepareRow, // Prepare the row (this function needs to be called for each row before getting the row props)
         state,
         setGlobalFilter,
     } = tableInstance;
-    const {globalFilter} = state;
+    const { globalFilter } = state;
+    const { pageIndex } = state;
 
-    function abrirModalCli(){
+    function abrirModalCli() {
         handleShowCli();
-        cerrarModal();        
+        cerrarModal();
     }
-        
-    function cerrarModal(){
-        columns={};
-        data={};
+
+    function cerrarModal() {
+        columns = {};
+        data = {};
         handleClose();
         //setDataSelecciona({});
     }
-    function handleClienteInsertado(newValue){
+    function handleClienteInsertado(newValue) {
         setDataSelecciona(newValue);
     }
+
     return (
         <>
             <Modal show={show} onHide={handleClose} size='xl' >
@@ -74,21 +81,22 @@ export const ModalTabla = ({ show, handleClose, titulo, DATA, COLUMNS,onChange }
                         className="btn-close"
                         data-bs-dismiss="modal"
                         aria-label="Close"
-                        onClick={()=> cerrarModal()}>
+                        onClick={() => cerrarModal()}>
                     </button>
                 </Modal.Header>
                 <Modal.Body>
                     <div className='container-fluid'>
-                    <div className='row'>
+                        <div className='row'>
 
-                        <div className='col'><GlobalFilter filter={globalFilter} setFilter={setGlobalFilter}/></div>                        
-                        <div className='col'>
-                            {titulo=="Clientes"?
-                        (
-                        <button className='btn btn-outline-success' onClick={()=>abrirModalCli()}>Crear cliente</button>
-                        ):""}
-                        </div>
-                        
+                            <div className='col'>
+                                <GlobalFilter filter={globalFilter} setFilter={setGlobalFilter} /></div>
+                            <div className='col'>
+                                {titulo == "Clientes" ?
+                                    (
+                                        <button className='btn btn-outline-success' onClick={() => abrirModalCli()}>Crear cliente</button>
+                                    ) : ""}
+                            </div>
+
                         </div>
                         <table className='table table-hover table-responsive' {...getTableProps()}>
                             <thead>
@@ -98,7 +106,7 @@ export const ModalTabla = ({ show, handleClose, titulo, DATA, COLUMNS,onChange }
                                             <th {...column.getHeaderProps(column.getSortByToggleProps())}
                                             >{column.render("Header")}
                                                 <span>
-                                                    
+
                                                     {column.isSorted ? (column.isSortedDesc ? (<i className='bi bi-arrow-up'></i>) : (<i className='bi bi-arrow-down'></i>)) : (<i className='bi bi-arrow-down-up'></i>)}
                                                 </span>
                                             </th>
@@ -108,10 +116,10 @@ export const ModalTabla = ({ show, handleClose, titulo, DATA, COLUMNS,onChange }
                                 ))}
                             </thead>
                             <tbody {...getTableBodyProps()}>
-                                {rows.map((row) => {
+                                {page.map((row) => {
                                     prepareRow(row);
                                     return (
-                                        <tr style={{cursor:'pointer'}} {...row.getRowProps()} onClick = {()=> setDataSelecciona(row.original)}>
+                                        <tr style={{ cursor: 'pointer' }} {...row.getRowProps()} onClick={() => setDataSelecciona(row.original)}>
                                             {row.cells.map(cell => {
                                                 return <td {...cell.getCellProps()}>{cell.render("Cell")}</td>;
                                             })}
@@ -120,16 +128,36 @@ export const ModalTabla = ({ show, handleClose, titulo, DATA, COLUMNS,onChange }
                                 })}
                             </tbody>
                         </table>
+                        <div className='container'>
+                            <div className='row'>
+                                <div className='col-md'>
+                                    <span>
+                                        Page{' '}
+                                        <strong>
+                                            {pageIndex + 1} of {pageOptions.length}
+                                        </strong>{' '}
+                                    </span>
+                                </div>
+                                <div className='col-md'>
+                                    <button className="btn btn-outline-success" onClick={() => previousPage()} disabled={!canPreviousPage} >
+                                        <a class="page-link" >{!canPreviousPage ? "No hay" : "Anterior"}</a>
+                                    </button>
+                                    <button className="btn btn-outline-success" onClick={() => nextPage()} disabled={!canNextPage}>
+                                        <a class="page-link">{!canNextPage ? "No hay" : "Siguiente"}</a>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </Modal.Body>
 
-            </Modal>            
-        {
-            showCli?
-            (<ModalCliente showCli={showCli} handleCloseCli={handleCloseCli}  onChange={handleClienteInsertado} />)
-            :
-            ""
-        }
+            </Modal>
+            {
+                showCli ?
+                    (<ModalCliente showCli={showCli} handleCloseCli={handleCloseCli} onChange={handleClienteInsertado} />)
+                    :
+                    ""
+            }
         </>
     )
 }
